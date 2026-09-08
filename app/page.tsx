@@ -1,6 +1,29 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 export default function Home() {
+  const [result, setResult] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function testPair() {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch("/api/pair");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Request failed");
+      setResult(data.text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -37,6 +60,26 @@ export default function Home() {
             </a>{" "}
             center.
           </p>
+
+          <div className="flex flex-col items-center gap-3 sm:items-start">
+            <button
+              onClick={testPair}
+              disabled={loading}
+              className="flex h-12 items-center justify-center rounded-full bg-foreground px-6 text-background transition-colors hover:bg-[#383838] disabled:opacity-50 dark:hover:bg-[#ccc]"
+            >
+              {loading ? "Asking Claude…" : "Test Anthropic API"}
+            </button>
+            {result && (
+              <p className="max-w-md rounded-lg bg-black/[.04] p-4 text-base text-zinc-800 dark:bg-white/[.08] dark:text-zinc-200">
+                {result}
+              </p>
+            )}
+            {error && (
+              <p className="max-w-md text-base text-red-600 dark:text-red-400">
+                Error: {error}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a

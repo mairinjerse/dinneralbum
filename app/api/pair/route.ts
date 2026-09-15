@@ -41,30 +41,47 @@ interface Album {
   tracks: string[];
 }
 
+class MusicBrainzNotFoundError extends Error {}
+
 function escapeLuceneValue(value: string) {
   return value.replace(/"/g, '\\"');
+}
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const RETRY_BACKOFF_MS = [400, 900];
+
+async function fetchMusicBrainz(url: string): Promise<Response> {
+  const maxAttempts = RETRY_BACKOFF_MS.length + 1;
+  let res: Response;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    res = await fetch(url, { headers: { "User-Agent": MUSICBRAINZ_USER_AGENT } });
+    if (res.status !== 503 || attempt === maxAttempts) {
+      return res;
+    }
+    await sleep(RETRY_BACKOFF_MS[attempt - 1]);
+  }
+  return res!;
 }
 
 async function findAlbum(title: string, artist: string): Promise<Album> {
   const query = `release:"${escapeLuceneValue(title)}" AND artist:"${escapeLuceneValue(artist)}"`;
   const searchUrl = `${MUSICBRAINZ_BASE}/release/?query=${encodeURIComponent(query)}&fmt=json&limit=1`;
 
-  const searchRes = await fetch(searchUrl, {
-    headers: { "User-Agent": MUSICBRAINZ_USER_AGENT },
-  });
+  const searchRes = await fetchMusicBrainz(searchUrl);
   if (!searchRes.ok) {
     throw new Error(`MusicBrainz search failed: ${searchRes.status}`);
   }
   const searchData: MusicBrainzSearchResponse = await searchRes.json();
   const best = searchData.releases?.[0];
   if (!best) {
-    throw new Error(`No MusicBrainz match for "${title}" by ${artist}`);
+    throw new MusicBrainzNotFoundError(`No MusicBrainz match for "${title}" by ${artist}`);
   }
 
   const lookupUrl = `${MUSICBRAINZ_BASE}/release/${best.id}?inc=recordings+artist-credits+release-groups&fmt=json`;
-  const lookupRes = await fetch(lookupUrl, {
-    headers: { "User-Agent": MUSICBRAINZ_USER_AGENT },
-  });
+  const lookupRes = await fetchMusicBrainz(lookupUrl);
   if (!lookupRes.ok) {
     throw new Error(`MusicBrainz lookup failed: ${lookupRes.status}`);
   }
@@ -105,6 +122,9 @@ export async function GET(request: NextRequest) {
   try {
     album = await findAlbum(title, artist);
   } catch (err) {
+    if (err instanceof MusicBrainzNotFoundError) {
+      return NextResponse.json({ error: err.message }, { status: 404 });
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "MusicBrainz lookup failed" },
       { status: 502 },

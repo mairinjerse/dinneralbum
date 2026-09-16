@@ -1,6 +1,8 @@
 "use client";
 
 import type { DinnerPlan } from "@/lib/dinnerPlan";
+import type { SpotifyAttribution } from "@/lib/spotify";
+import SpotifyCard from "./SpotifyCard";
 
 interface AlbumInfo {
   title: string;
@@ -11,12 +13,18 @@ interface AlbumInfo {
 interface ResultsScreenProps {
   album: AlbumInfo;
   plan: DinnerPlan;
+  spotify: SpotifyAttribution | null;
   onReset: () => void;
 }
 
 const DOT_COLORS = ["bg-terracotta", "bg-mustard", "bg-dustyrose"];
 
-export default function ResultsScreen({ album, plan, onReset }: ResultsScreenProps) {
+export default function ResultsScreen({
+  album,
+  plan,
+  spotify,
+  onReset,
+}: ResultsScreenProps) {
   return (
     <div className="relative flex flex-1 justify-center overflow-hidden p-4 py-8 sm:py-12">
       <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-cream-border bg-paper p-6 sm:p-12">
@@ -36,6 +44,12 @@ export default function ResultsScreen({ album, plan, onReset }: ResultsScreenPro
             {album.title}
           </h2>
         </header>
+
+        {spotify && (spotify.album || spotify.artist) && (
+          <div className="mt-6">
+            <SpotifyCard album={spotify.album} artist={spotify.artist} />
+          </div>
+        )}
 
         <p className="mt-8 max-w-2xl text-base leading-relaxed text-ink-soft">
           {plan.anchor}

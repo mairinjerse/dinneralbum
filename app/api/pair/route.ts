@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SYSTEM_PROMPT, buildUserMessage } from "@/lib/prompt";
 import { findAlbum, MusicBrainzNotFoundError } from "@/lib/musicbrainz";
 import { DINNER_PLAN_TOOL, type DinnerPlan } from "@/lib/dinnerPlan";
+import { getSpotifyAttribution, type SpotifyAttribution } from "@/lib/spotify";
 
 export async function GET(request: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -33,19 +34,24 @@ export async function GET(request: NextRequest) {
 
   const anthropic = new Anthropic({ apiKey });
 
-  const message = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 1500,
-    system: SYSTEM_PROMPT,
-    tools: [DINNER_PLAN_TOOL],
-    tool_choice: { type: "tool", name: "dinner_plan" },
-    messages: [
-      {
-        role: "user",
-        content: buildUserMessage(album),
-      },
-    ],
-  });
+  const [message, spotify] = await Promise.all([
+    anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1500,
+      system: SYSTEM_PROMPT,
+      tools: [DINNER_PLAN_TOOL],
+      tool_choice: { type: "tool", name: "dinner_plan" },
+      messages: [
+        {
+          role: "user",
+          content: buildUserMessage(album),
+        },
+      ],
+    }),
+    getSpotifyAttribution(album.title, album.artist).catch(
+      (): SpotifyAttribution => ({ album: null, artist: null }),
+    ),
+  ]);
 
   const toolUse = message.content.find((block) => block.type === "tool_use");
   if (!toolUse || toolUse.type !== "tool_use") {
@@ -74,5 +80,6 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     plan,
     album: { title: album.title, artist: album.artist, year: album.year },
+    spotify,
   });
 }

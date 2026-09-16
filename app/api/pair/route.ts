@@ -49,7 +49,10 @@ export async function GET(request: NextRequest) {
       ],
     }),
     getSpotifyAttribution(album.title, album.artist).catch(
-      (): SpotifyAttribution => ({ album: null, artist: null }),
+      (err): SpotifyAttribution => {
+        console.error("Spotify attribution failed:", err);
+        return { album: null, artist: null };
+      },
     ),
   ]);
 

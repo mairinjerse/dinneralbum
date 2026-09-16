@@ -26,18 +26,18 @@ export default function GeneratingScreen({ title, artist }: GeneratingScreenProp
 
   return (
     <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-cream-border bg-paper p-8 sm:p-12">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-surface-border bg-surface p-8 sm:p-12">
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-br-full bg-terracotta/80"
+          className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-br-full bg-accent"
         />
 
         <div className="relative flex flex-col items-center gap-8 py-8 text-center">
           <div className="relative h-28 w-28">
-            <div className="absolute inset-0 animate-spin-slow rounded-full border-[10px] border-mustard/25 border-t-terracotta" />
+            <div className="absolute inset-0 animate-spin-slow rounded-full border-[10px] border-ink/10 border-t-accent" />
             <div className="absolute inset-[14px] rounded-full bg-ink" />
             <div className="absolute inset-[14px] flex items-center justify-center rounded-full">
-              <div className="h-2 w-2 rounded-full bg-cream" />
+              <div className="h-2 w-2 rounded-full bg-accent" />
             </div>
           </div>
 

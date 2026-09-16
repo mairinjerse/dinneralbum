@@ -17,7 +17,7 @@ interface ResultsScreenProps {
   onReset: () => void;
 }
 
-const DOT_COLORS = ["bg-terracotta", "bg-mustard", "bg-dustyrose"];
+const DOT_COLORS = ["bg-accent", "bg-ink", "bg-accent-soft"];
 
 export default function ResultsScreen({
   album,
@@ -27,20 +27,20 @@ export default function ResultsScreen({
 }: ResultsScreenProps) {
   return (
     <div className="relative flex flex-1 justify-center overflow-hidden p-4 py-8 sm:py-12">
-      <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-cream-border bg-paper p-6 sm:p-12">
+      <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-surface-border bg-surface p-6 sm:p-12">
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-2 -top-2 h-24 w-24 rounded-br-[3rem] bg-terracotta/85 sm:h-32 sm:w-32"
+          className="pointer-events-none absolute -left-2 -top-2 h-24 w-24 rounded-br-[3rem] bg-accent sm:h-32 sm:w-32"
         />
 
         <header className="relative flex flex-col gap-2 pl-16 sm:pl-20">
-          <p className="text-xs font-medium uppercase tracking-widest text-ink-soft">
+          <span className="mb-1 inline-flex w-fit items-center rounded-full bg-ink px-3 py-1 text-xs font-semibold uppercase tracking-widest text-accent">
             Dinner for
-          </p>
+          </span>
           <h1 className="font-display text-2xl font-extrabold leading-tight text-ink sm:text-3xl">
             {album.artist}
           </h1>
-          <h2 className="font-display -mt-1 text-xl font-bold leading-tight text-mustard sm:text-2xl">
+          <h2 className="-mt-1 text-lg font-medium leading-tight text-ink-soft sm:text-xl">
             {album.title}
           </h2>
         </header>
@@ -60,11 +60,11 @@ export default function ResultsScreen({
         <div className="relative grid gap-x-10 gap-y-8 sm:grid-cols-2">
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-4 top-4 -z-10 hidden h-20 w-20 rounded-full bg-dustyrose/80 sm:block"
+            className="pointer-events-none absolute -right-4 top-4 -z-10 hidden h-20 w-20 rounded-full bg-accent sm:block"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute -left-4 bottom-4 -z-10 hidden h-16 w-24 rounded-full bg-mustard/80 sm:block"
+            className="pointer-events-none absolute -left-4 bottom-4 -z-10 hidden h-16 w-24 rounded-full bg-ink/90 sm:block"
           />
           {plan.menu.map((item) => (
             <div key={item.label} className="flex flex-col gap-1.5">

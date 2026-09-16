@@ -67,10 +67,10 @@ export default function LandingScreen({ onSubmit, error }: LandingScreenProps) {
 
   return (
     <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-cream-border bg-paper p-8 sm:p-12">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-surface-border bg-surface p-8 sm:p-12">
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-16 top-20 h-48 w-48 rounded-full bg-terracotta/90 sm:-left-24 sm:top-24 sm:h-80 sm:w-80 md:h-96 md:w-96"
+          className="pointer-events-none absolute -left-16 top-20 h-48 w-48 rounded-full bg-accent sm:-left-24 sm:top-24 sm:h-80 sm:w-80 md:h-96 md:w-96"
         />
 
         <div className="relative flex flex-col gap-10">
@@ -94,14 +94,14 @@ export default function LandingScreen({ onSubmit, error }: LandingScreenProps) {
                 className="font-display w-full border-b-2 border-ink/20 bg-transparent pb-2 text-4xl font-bold text-ink placeholder:text-ink/30 outline-none focus:border-ink/50 sm:text-5xl"
               />
               {showSuggestions && title.trim().length >= 2 && suggestions.length > 0 && (
-                <ul className="absolute top-full z-10 mt-2 w-full overflow-hidden rounded-xl border border-cream-border bg-paper shadow-lg">
+                <ul className="absolute top-full z-10 mt-2 w-full overflow-hidden rounded-xl border border-surface-border bg-surface shadow-lg">
                   {suggestions.map((c) => (
                     <li key={c.id}>
                       <button
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => pickSuggestion(c)}
-                        className="flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-cream"
+                        className="flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-accent-soft"
                       >
                         <span className="text-ink">
                           {c.title}{" "}
@@ -123,14 +123,14 @@ export default function LandingScreen({ onSubmit, error }: LandingScreenProps) {
               className="w-full border-b border-ink/15 bg-transparent pb-2 text-lg text-ink placeholder:text-ink-soft/70 outline-none focus:border-ink/40"
             />
 
-            {error && <p className="text-sm text-terracotta">{error}</p>}
+            {error && <p className="text-sm text-error">{error}</p>}
 
             <div className="flex items-center justify-between pt-2">
               <span className="h-px flex-1 bg-rule" />
               <button
                 type="submit"
                 disabled={!title.trim()}
-                className="ml-6 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-cream transition-opacity hover:opacity-90 disabled:opacity-40"
+                className="ml-6 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-surface transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 Set the table
               </button>

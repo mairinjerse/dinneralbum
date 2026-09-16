@@ -89,9 +89,9 @@ export default function Home() {
               {loading ? "Asking Claude…" : "Test Anthropic API"}
             </button>
             {result && (
-              <p className="max-w-md rounded-lg bg-black/[.04] p-4 text-base text-zinc-800 dark:bg-white/[.08] dark:text-zinc-200">
+              <div className="max-w-2xl whitespace-pre-wrap rounded-lg bg-black/[.04] p-4 text-base text-zinc-800 dark:bg-white/[.08] dark:text-zinc-200">
                 {result}
-              </p>
+              </div>
             )}
             {error && (
               <p className="max-w-md text-base text-red-600 dark:text-red-400">

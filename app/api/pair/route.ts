@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { SYSTEM_PROMPT, buildUserMessage } from "@/lib/prompt";
 
 const MUSICBRAINZ_USER_AGENT =
   "DinnerAlbum/0.1.0 (https://github.com/mairinjerse/dinneralbum)";
@@ -131,25 +132,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const numberedTracklist = album.tracks
-    .map((track, index) => `${index + 1}. ${track}`)
-    .join("\n");
-
   const anthropic = new Anthropic({ apiKey });
 
   const message = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 200,
+    max_tokens: 1200,
+    system: SYSTEM_PROMPT,
     messages: [
       {
         role: "user",
-        content: `Album: ${album.title}
-Artist: ${album.artist}
-Year: ${album.year}
-Tracklist:
-${numberedTracklist}
-
-In one or two sentences, suggest a dinner that pairs well with listening to this album.`,
+        content: buildUserMessage(album),
       },
     ],
   });

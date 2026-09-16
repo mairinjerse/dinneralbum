@@ -33,7 +33,17 @@ export default function ResultsScreen({
           className="pointer-events-none absolute -left-2 -top-2 h-24 w-24 rounded-br-[3rem] bg-accent sm:h-32 sm:w-32"
         />
 
-        <header className="relative flex flex-col gap-2 pl-16 sm:pl-20">
+        <div className="relative flex justify-end">
+          <button
+            type="button"
+            onClick={onReset}
+            className="text-sm font-medium text-ink-soft underline decoration-rule underline-offset-4 hover:text-ink"
+          >
+            ← Another album
+          </button>
+        </div>
+
+        <header className="relative -mt-6 flex flex-col gap-2 pl-16 sm:-mt-8 sm:pl-20">
           <span className="mb-1 inline-flex w-fit items-center rounded-full bg-ink px-3 py-1 text-xs font-semibold uppercase tracking-widest text-accent">
             Dinner for
           </span>
@@ -125,13 +135,6 @@ export default function ResultsScreen({
             >
               Print the menu
             </button>
-            <button
-              type="button"
-              onClick={onReset}
-              className="text-ink-soft underline decoration-rule underline-offset-4 hover:text-ink"
-            >
-              Another album
-            </button>
           </div>
         </div>
       </div>
@@ -146,8 +149,8 @@ function RunningOrderColumns({
 }) {
   return (
     <div className="flex flex-col">
-      {beats.map((beat) => (
-        <BeatRow key={beat.track} beat={beat} />
+      {beats.map((beat, index) => (
+        <BeatRow key={`${beat.track}-${index}`} beat={beat} />
       ))}
     </div>
   );

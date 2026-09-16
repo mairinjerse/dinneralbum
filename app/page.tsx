@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useState } from "react";
 
 export default function Home() {
+  const [title, setTitle] = useState("Kind of Blue");
+  const [artist, setArtist] = useState("Miles Davis");
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -13,7 +15,8 @@ export default function Home() {
     setError(null);
     setResult(null);
     try {
-      const res = await fetch("/api/pair");
+      const params = new URLSearchParams({ title, artist });
+      const res = await fetch(`/api/pair?${params}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
       setResult(data.text);
@@ -62,9 +65,25 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col items-center gap-3 sm:items-start">
+            <div className="flex w-full max-w-md flex-col gap-2 sm:flex-row">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Album title"
+                className="h-12 w-full rounded-full border border-black/[.08] bg-transparent px-4 text-base text-black outline-none focus:border-black/30 dark:border-white/[.145] dark:text-zinc-50 dark:focus:border-white/30"
+              />
+              <input
+                type="text"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+                placeholder="Artist"
+                className="h-12 w-full rounded-full border border-black/[.08] bg-transparent px-4 text-base text-black outline-none focus:border-black/30 dark:border-white/[.145] dark:text-zinc-50 dark:focus:border-white/30"
+              />
+            </div>
             <button
               onClick={testPair}
-              disabled={loading}
+              disabled={loading || !title.trim() || !artist.trim()}
               className="flex h-12 items-center justify-center rounded-full bg-foreground px-6 text-background transition-colors hover:bg-[#383838] disabled:opacity-50 dark:hover:bg-[#ccc]"
             >
               {loading ? "Asking Claude…" : "Test Anthropic API"}

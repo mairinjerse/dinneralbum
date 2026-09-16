@@ -1,0 +1,151 @@
+"use client";
+
+import type { DinnerPlan } from "@/lib/dinnerPlan";
+
+interface AlbumInfo {
+  title: string;
+  artist: string;
+  year: string;
+}
+
+interface ResultsScreenProps {
+  album: AlbumInfo;
+  plan: DinnerPlan;
+  onReset: () => void;
+}
+
+const DOT_COLORS = ["bg-terracotta", "bg-mustard", "bg-dustyrose"];
+
+export default function ResultsScreen({ album, plan, onReset }: ResultsScreenProps) {
+  return (
+    <div className="relative flex flex-1 justify-center overflow-hidden p-4 py-8 sm:py-12">
+      <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-cream-border bg-paper p-6 sm:p-12">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-2 -top-2 h-24 w-24 rounded-br-[3rem] bg-terracotta/85 sm:h-32 sm:w-32"
+        />
+
+        <header className="relative flex flex-col gap-2 pl-16 sm:pl-20">
+          <p className="text-xs font-medium uppercase tracking-widest text-ink-soft">
+            Dinner for
+          </p>
+          <h1 className="font-display text-2xl font-extrabold leading-tight text-ink sm:text-3xl">
+            {album.artist}
+          </h1>
+          <h2 className="font-display -mt-1 text-xl font-bold leading-tight text-mustard sm:text-2xl">
+            {album.title}
+          </h2>
+        </header>
+
+        <p className="mt-8 max-w-2xl text-base leading-relaxed text-ink-soft">
+          {plan.anchor}
+        </p>
+
+        <hr className="my-8 border-rule" />
+
+        <div className="relative grid gap-x-10 gap-y-8 sm:grid-cols-2">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-4 top-4 -z-10 hidden h-20 w-20 rounded-full bg-dustyrose/80 sm:block"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-4 bottom-4 -z-10 hidden h-16 w-24 rounded-full bg-mustard/80 sm:block"
+          />
+          {plan.menu.map((item) => (
+            <div key={item.label} className="flex flex-col gap-1.5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft">
+                {item.label}
+              </p>
+              <p className="font-medium text-ink">{item.dish}</p>
+              {item.description && (
+                <p className="text-sm text-ink-soft">{item.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <hr className="my-8 border-rule" />
+
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft">
+            Drink
+          </p>
+          {plan.drinkOpening && (
+            <p className="text-sm text-ink">
+              <span className="font-medium">Opening — </span>
+              {plan.drinkOpening}
+            </p>
+          )}
+          {plan.drinkThroughDinner && (
+            <p className="text-sm text-ink">
+              <span className="font-medium">Through dinner — </span>
+              {plan.drinkThroughDinner}
+            </p>
+          )}
+          {plan.drinkNote && (
+            <p className="text-sm italic text-ink-soft">{plan.drinkNote}</p>
+          )}
+        </div>
+
+        <hr className="my-8 border-rule" />
+
+        <div className="flex flex-col gap-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft">
+            Running order
+          </p>
+          <RunningOrderColumns beats={plan.runningOrder} />
+        </div>
+
+        <div className="mt-10 flex items-center justify-between">
+          <div className="flex gap-1.5">
+            {DOT_COLORS.map((color) => (
+              <span key={color} className={`h-2.5 w-2.5 rounded-full ${color}`} />
+            ))}
+          </div>
+          <div className="flex gap-5 text-sm font-medium">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="text-ink-soft underline decoration-rule underline-offset-4 hover:text-ink"
+            >
+              Print the menu
+            </button>
+            <button
+              type="button"
+              onClick={onReset}
+              className="text-ink-soft underline decoration-rule underline-offset-4 hover:text-ink"
+            >
+              Another album
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RunningOrderColumns({
+  beats,
+}: {
+  beats: DinnerPlan["runningOrder"];
+}) {
+  return (
+    <div className="flex flex-col">
+      {beats.map((beat) => (
+        <BeatRow key={beat.track} beat={beat} />
+      ))}
+    </div>
+  );
+}
+
+function BeatRow({ beat }: { beat: DinnerPlan["runningOrder"][number] }) {
+  return (
+    <div className="flex flex-col gap-1 border-b border-rule py-3 sm:flex-row sm:items-baseline sm:gap-4">
+      <span className="shrink-0 text-sm font-medium text-ink sm:w-52">
+        {beat.track}
+      </span>
+      <span className="text-sm text-ink-soft">{beat.action}</span>
+    </div>
+  );
+}

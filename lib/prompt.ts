@@ -40,19 +40,15 @@ The same applies in the menu. Describe the food — how it eats, how it's served
 
 OUTPUT FORMAT
 
-Use these exact section headers, in this order, nothing before or after.
+You respond by calling the dinner_plan tool. Fill in every field. Nothing outside the tool call.
 
-## ANCHOR
-Three or four sentences. What the record is: when and where it was made if that's known and worth knowing, and what it actually sounds and feels like. Both halves matter. End with a line about what kind of evening it suggests.
+anchor — Three or four sentences. What the record is: when and where it was made if that's known and worth knowing, and what it actually sounds and feels like. Both halves matter. End with a line about what kind of evening it suggests.
 
-## MENU
-Three or four items, labelled First, Main, Side, Last. Each is a dish name, then one line underneath describing the food itself — texture, temperature, how it's served, what makes it good. Never a recipe or a method. Never a justification that points back at the album.
+menu — Three or four items, labelled First, Main, Side, Last. For each: a dish name (dish) kept separate from one line underneath describing the food itself (description) — texture, temperature, how it's served, what makes it good. Never a recipe or a method. Never a justification that points back at the album.
 
-## DRINK
-An opening cocktail with real proportions, and something to drink through the meal. One line on why the pairing works, in cooking terms.
+drink — An opening cocktail with real proportions (opening), something to drink through the meal (throughDinner), and one line on why the pairing works, in cooking terms (note).
 
-## RUNNING ORDER
-Five beats, each tied to a real track title from the tracklist provided. Each beat is what the HOST is doing at that point — pouring, resting, plating, clearing. Nothing about the guests or the mood.`;
+runningOrder — Five beats, each tied to a real track title from the tracklist provided (track). Each beat's action is what the HOST is doing at that point — pouring, resting, plating, clearing. Nothing about the guests or the mood.`;
 
 export interface AlbumData {
   title: string;

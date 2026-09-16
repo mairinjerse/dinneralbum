@@ -1,109 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { SYSTEM_PROMPT, buildUserMessage } from "@/lib/prompt";
-
-const MUSICBRAINZ_USER_AGENT =
-  "DinnerAlbum/0.1.0 (https://github.com/mairinjerse/dinneralbum)";
-const MUSICBRAINZ_BASE = "https://musicbrainz.org/ws/2";
-
-interface MusicBrainzArtistCredit {
-  name: string;
-}
-
-interface MusicBrainzTrack {
-  title: string;
-}
-
-interface MusicBrainzMedium {
-  tracks?: MusicBrainzTrack[];
-}
-
-interface MusicBrainzReleaseGroup {
-  "first-release-date"?: string;
-}
-
-interface MusicBrainzRelease {
-  id: string;
-  title: string;
-  date?: string;
-  "artist-credit"?: MusicBrainzArtistCredit[];
-  media?: MusicBrainzMedium[];
-  "release-group"?: MusicBrainzReleaseGroup;
-}
-
-interface MusicBrainzSearchResponse {
-  releases?: MusicBrainzRelease[];
-}
-
-interface Album {
-  title: string;
-  artist: string;
-  year: string;
-  tracks: string[];
-}
-
-class MusicBrainzNotFoundError extends Error {}
-
-function escapeLuceneValue(value: string) {
-  return value.replace(/"/g, '\\"');
-}
-
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-const RETRY_BACKOFF_MS = [400, 900];
-
-async function fetchMusicBrainz(url: string): Promise<Response> {
-  const maxAttempts = RETRY_BACKOFF_MS.length + 1;
-  let res: Response;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    res = await fetch(url, { headers: { "User-Agent": MUSICBRAINZ_USER_AGENT } });
-    if (res.status !== 503 || attempt === maxAttempts) {
-      return res;
-    }
-    await sleep(RETRY_BACKOFF_MS[attempt - 1]);
-  }
-  return res!;
-}
-
-async function findAlbum(title: string, artist: string): Promise<Album> {
-  const query = `release:"${escapeLuceneValue(title)}" AND artist:"${escapeLuceneValue(artist)}"`;
-  const searchUrl = `${MUSICBRAINZ_BASE}/release/?query=${encodeURIComponent(query)}&fmt=json&limit=1`;
-
-  const searchRes = await fetchMusicBrainz(searchUrl);
-  if (!searchRes.ok) {
-    throw new Error(`MusicBrainz search failed: ${searchRes.status}`);
-  }
-  const searchData: MusicBrainzSearchResponse = await searchRes.json();
-  const best = searchData.releases?.[0];
-  if (!best) {
-    throw new MusicBrainzNotFoundError(`No MusicBrainz match for "${title}" by ${artist}`);
-  }
-
-  const lookupUrl = `${MUSICBRAINZ_BASE}/release/${best.id}?inc=recordings+artist-credits+release-groups&fmt=json`;
-  const lookupRes = await fetchMusicBrainz(lookupUrl);
-  if (!lookupRes.ok) {
-    throw new Error(`MusicBrainz lookup failed: ${lookupRes.status}`);
-  }
-  const release: MusicBrainzRelease = await lookupRes.json();
-
-  const tracks = (release.media ?? []).flatMap(
-    (medium) => medium.tracks?.map((track) => track.title) ?? [],
-  );
-
-  const year =
-    release.date?.slice(0, 4) ||
-    release["release-group"]?.["first-release-date"]?.slice(0, 4) ||
-    "unknown";
-
-  return {
-    title: release.title,
-    artist: release["artist-credit"]?.[0]?.name ?? artist,
-    year,
-    tracks,
-  };
-}
+import { findAlbum, MusicBrainzNotFoundError } from "@/lib/musicbrainz";
+import { DINNER_PLAN_TOOL, type DinnerPlan } from "@/lib/dinnerPlan";
 
 export async function GET(request: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -119,7 +18,7 @@ export async function GET(request: NextRequest) {
   const title = searchParams.get("title")?.trim() || "Kind of Blue";
   const artist = searchParams.get("artist")?.trim() || "Miles Davis";
 
-  let album: Album;
+  let album;
   try {
     album = await findAlbum(title, artist);
   } catch (err) {
@@ -136,8 +35,10 @@ export async function GET(request: NextRequest) {
 
   const message = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 1200,
+    max_tokens: 1500,
     system: SYSTEM_PROMPT,
+    tools: [DINNER_PLAN_TOOL],
+    tool_choice: { type: "tool", name: "dinner_plan" },
     messages: [
       {
         role: "user",
@@ -146,10 +47,32 @@ export async function GET(request: NextRequest) {
     ],
   });
 
-  const text = message.content
-    .filter((block) => block.type === "text")
-    .map((block) => block.text)
-    .join("");
+  const toolUse = message.content.find((block) => block.type === "tool_use");
+  if (!toolUse || toolUse.type !== "tool_use") {
+    return NextResponse.json(
+      { error: "Claude did not return a dinner plan" },
+      { status: 502 },
+    );
+  }
 
-  return NextResponse.json({ text });
+  const input = toolUse.input as {
+    anchor: string;
+    menu: { label: "First" | "Main" | "Side" | "Last"; dish: string; description: string }[];
+    drink: { opening: string; throughDinner: string; note: string };
+    runningOrder: { track: string; action: string }[];
+  };
+
+  const plan: DinnerPlan = {
+    anchor: input.anchor,
+    menu: input.menu,
+    drinkOpening: input.drink.opening,
+    drinkThroughDinner: input.drink.throughDinner,
+    drinkNote: input.drink.note,
+    runningOrder: input.runningOrder,
+  };
+
+  return NextResponse.json({
+    plan,
+    album: { title: album.title, artist: album.artist, year: album.year },
+  });
 }
